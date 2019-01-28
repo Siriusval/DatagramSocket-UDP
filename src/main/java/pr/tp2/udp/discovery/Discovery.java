@@ -2,19 +2,19 @@ package pr.tp2.udp.discovery;
 
 public class Discovery {
 
-	public static void handleWhois(String id) {
+	public static void sendWhois(String id) {
 		// Envoie un message Whois
 	}
 
-	public static void handleLeaving(String id) {
+	public static void sendLeaving(String id) {
 		// Envoie un message Leaving
 	}
 
-	public static void handleIAM(String id, String url) {
+	public static void sendIAM(String id, String url) {
 		// Envoie un message IAM
 	}
 
-	public static void handleListen() {
+	public static void listenAndReply() {
 		// Ecoute et affiche les évennements IAM,LEAVING
 
 		// Réponds aux WHOIS si ID = ID
@@ -35,16 +35,16 @@ public class Discovery {
 
 		switch (cmd) {
 		case "listen":
-			handleListen();
+			listenAndReply();
 			break;
 		case "iam":
-			handleIAM(id, url);
+			sendIAM(id, url);
 			break;
 		case "leaving":
-			handleLeaving(id);
+			sendLeaving(id);
 			break;
 		case "whois":
-			handleWhois(id);
+			sendWhois(id);
 			break;
 		default:
 			System.out.println("Erreur de commande");
