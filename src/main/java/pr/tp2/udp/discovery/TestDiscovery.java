@@ -7,6 +7,7 @@ public class TestDiscovery {
 			Discovery.listenAndReply();
 		};
 		new Thread(listener).start();
+		Thread.sleep(1000);
 
 		Discovery.sendWhois("051005022");
 		Discovery.sendIAM("tftp", "127.0.0.1:6969");
