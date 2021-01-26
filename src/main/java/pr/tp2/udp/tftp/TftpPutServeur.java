@@ -14,7 +14,7 @@ public class TftpPutServeur {
 
 		try {
 			short packetNumber = 1;
-			byte buffer[] = new byte[100];
+			byte[] buffer = new byte[100];
 			// Boucle
 			while(true){
 
@@ -25,7 +25,7 @@ public class TftpPutServeur {
 				//Truncated buffer
 				int length = reception.getLength();
 				byte [] copy = Arrays.copyOfRange(buffer,0,length);
-				affiche(copy);
+				TftpDecode.affiche(copy);
 				System.out.println();
 
 				// Attention à ne pas afficher plus d'informations que nécessaire.
@@ -33,7 +33,7 @@ public class TftpPutServeur {
 				// Décodage du packet
 				System.out.println("Decoded packet :");
 
-				decodeRequest(reception);
+				TftpDecode.decodeRequest(reception);
 				System.out.println();
 
 				Arrays.fill(buffer, (byte) 0);
@@ -41,7 +41,7 @@ public class TftpPutServeur {
 				System.out.println("----------------------------------------");
 
 				// Envoyer acquittement
-				sendAck(serverSocket, (short) packetNumber, reception);
+				sendAck(serverSocket, packetNumber, reception);
 			}
 		}
 		catch(Exception e){
@@ -56,6 +56,14 @@ public class TftpPutServeur {
 	}
 	//SocketAddress -> DatagramPacket
 	public static void sendAck(DatagramSocket server, short seqNumber, DatagramPacket dstAddr) throws IOException {
+		/*
+		  				 2 bytes     2 bytes
+                         ---------------------
+                        | Opcode |   Block #  |
+                         ---------------------
+
+                         Figure 5-3: ACK packet
+		 */
 
 		// Construire le paquet avec les bonnes informations
 		ByteBuffer byteBuffer = ByteBuffer.allocate(4);
@@ -65,7 +73,7 @@ public class TftpPutServeur {
 		// afficher le tableau de bytes envoyé
 		byte [] buffer = byteBuffer.array();
 		System.out.println("Buffer to send :");
-		affiche(buffer);
+		TftpDecode.affiche(buffer);
 		System.out.println();
 
 		// Envoyer le paquet à la bonnes addresses
@@ -77,16 +85,4 @@ public class TftpPutServeur {
 
 	}
 
-	public static void affiche(byte[] bytes) {
-		for (int i = 0; i < bytes.length; i++) {
-			if (i % 16 == 0) {
-				System.out.println("\n");
-			}
-			System.out.printf("%02x ", bytes[i]);
-		}
-	}
-
-	public static void decodeRequest(DatagramPacket p) {
-		System.out.printf("Type : %s, fichier : %s, mode %s", "RRQ", "test.txt", "ascii");
-	}
 }

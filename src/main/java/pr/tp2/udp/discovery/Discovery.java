@@ -6,34 +6,67 @@ import java.net.MulticastSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+/**
+ * Discovery class
+ * Service that allows to :
+ * - Listen to commands on multicast server (listenAndReply)
+ * - send WHOIS cmd to get the ip of a device (by id)
+ * - send IAM cmd to send back ip of a device
+ * - send LEAVING cmd to say device is not online anymore
+ */
 public class Discovery {
 
+	/** IP of multicast group*/
 	private static final String GROUP_IP = "225.0.4.1";
+	/** Port of multicast group*/
 	private static final int PORT = 9999;
-	private static final String TYPE_IAM = "IAM";
-	private static final String TYPE_WHOIS = "WHOIS";
-	private static final String TYPE_LEAVING = "LEAVING";
 
+	/**
+	 * Types of available cmd
+	 */
+	private enum TYPE {
+		IAM,
+		WHOIS,
+		LEAVING
+	}
+
+	/**
+	 * Send a WHOIS message
+	 * @param id, id of device
+	 */
 	public static void sendWhois(String id) {
 		// Envoie un message Whois
-		String msg = "WHOIS:"+id;
+		String msg = TYPE.WHOIS.toString()+":"+id;
 		sendMessage(msg);
 	}
 
+	/**
+	 * Send a LEAVING message
+	 * @param id, id of device
+	 */
 	public static void sendLeaving(String id) {
 		// Envoie un message Leaving
-		String msg = "LEAVING:"+id;
+		String msg = TYPE.LEAVING.toString()+":"+id;
 		sendMessage(msg);
 
 	}
 
-
+	/**
+	 * Send a IAM message
+	 * @param id, id of device
+	 * @param url, url of the device
+	 */
 	public static void sendIAM(String id, String url) {
 		// Envoie un message IAM
-		String msg = "IAM:"+id+":"+url;
+		String msg = TYPE.IAM.toString()+":"+id+":"+url;
 		sendMessage(msg);
 	}
 
+	/**
+	 * Helper function for sendWhois, sendIAM, send Leaving
+	 * Convert a msg to byte array and send it on multicast network
+	 * @param msg, the message to send
+	 */
 	private static void sendMessage(String msg) {
 		byte [] contenuMessage = msg.getBytes(StandardCharsets.UTF_8);
 		try{
@@ -49,7 +82,10 @@ public class Discovery {
 		}
 	}
 
-
+	/**
+	 * Simulate a multicast server
+	 * listen all messages, and answer to WHOIS if id is correct
+	 */
 	public static void listenAndReply() {
 		// Réponds aux WHOIS si ID = ID
 		// URL du service :
@@ -57,7 +93,7 @@ public class Discovery {
 		String URL = "https://istic.univ-rennes1.fr/";
 
 		try{
-			// Ecoute et affiche les évennements IAM,LEAVING
+			// Ecoute et affiche les évenements IAM,LEAVING
 			InetAddress groupeIP = InetAddress.getByName(GROUP_IP);
 			MulticastSocket socketReception  = new MulticastSocket(PORT);
 			socketReception.joinGroup(groupeIP);
@@ -71,7 +107,7 @@ public class Discovery {
 				message = new DatagramPacket(contenuMessage, contenuMessage.length);
 				socketReception.receive(message);
 				String msg = new String(contenuMessage);
-				System.out.println("Received msg :"+msg);
+				System.out.println("Received msg : "+msg);
 
 				//Analyze
 				String [] splittedMsg = msg.split(":");
@@ -82,10 +118,10 @@ public class Discovery {
 
 				//Answer
 				else{
-					String type = splittedMsg[0];
-					String id = splittedMsg[1];
+					String type = splittedMsg[0].trim();
+					String id = splittedMsg[1].trim();
 
-					if (type.equals(TYPE_WHOIS) && id.equals(ID)){
+					if (type.equals(TYPE.WHOIS.toString()) && id.equals(ID)){
 						sendIAM(ID,URL);
 					}
 				}
@@ -104,6 +140,10 @@ public class Discovery {
 
 	}
 
+	/**
+	 * Main method, to try cmds
+	 * @param args, _
+	 */
 	public static void main(String[] args) {
 		String cmd = args[0], url = null, id = null;
 		if (args.length > 1) {
