@@ -41,11 +41,11 @@ public class TftpPutServeur {
 				System.out.println("----------------------------------------");
 
 				// Envoyer acquittement
-				sendAck(serverSocket, packetNumber, reception);
+				sendAck(serverSocket, packetNumber, reception.getSocketAddress());
 			}
 		}
 		catch(Exception e){
-			System.out.println("Error : "+e.getMessage());
+			e.printStackTrace();
 		}
 		finally {
 			serverSocket.close();
@@ -54,8 +54,8 @@ public class TftpPutServeur {
 		}
 
 	}
-	//SocketAddress -> DatagramPacket
-	public static void sendAck(DatagramSocket server, short seqNumber, DatagramPacket dstAddr) throws IOException {
+
+	public static void sendAck(DatagramSocket server, short seqNumber, SocketAddress dstAddr) throws IOException {
 		/*
 		  				 2 bytes     2 bytes
                          ---------------------
@@ -76,10 +76,11 @@ public class TftpPutServeur {
 		TftpDecode.affiche(buffer);
 		System.out.println();
 
+
 		// Envoyer le paquet à la bonnes addresses
-		DatagramPacket paquetEnvoie = new DatagramPacket(buffer, buffer.length, new InetSocketAddress(dstAddr.getAddress(), dstAddr.getPort()));
+		DatagramPacket paquetEnvoie = new DatagramPacket(buffer, buffer.length, dstAddr);
 		server.send(paquetEnvoie);
-		System.out.println("Send "+seqNumber+" to "+dstAddr.getAddress()+":"+dstAddr.getPort());
+		System.out.println("Send "+seqNumber+" to "+dstAddr);
 		System.out.println("----------------------------------------");
 
 
